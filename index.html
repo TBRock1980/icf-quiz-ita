@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz ICF Competenze Core 68 Domande</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --icf-blue:#30398D; --deep-blue:#001E60; --icf-gold:#FEBD3B; --cred-orange:#EA7600;
+      --ok:#16a34a; --bad:#dc2626;
+      --font-title:'Montserrat',ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      --font-body:'Lora',ui-serif,Georgia,Cambria,"Times New Roman",Times,serif;
+    }
+    html,body{height:100%} *{box-sizing:border-box}
+
+    html[data-theme="dark"]{
+      --bg1:#001e60; --bg2:#30398D; --bg3:#2c3e83;
+      --card:#0b102a; --card2:#12183a; --text:#E7EAF4; --muted:#cfd5ff;
+      --accent: var(--cred-orange); --accent2: var(--icf-gold);
+      --surface-border: rgba(255,255,255,.12);
+      --btn-bg: rgba(255,255,255,.04); --btn-bg-hover: rgba(255,255,255,.08);
+      --progress-bg: rgba(255,255,255,.18);
+      --chart-grid:#2b2f69; --chart-axis:#9aa3ff; --chart-text:#eef2ff;
+    }
+
+    html[data-theme="light"]{
+      --bg1:#f3f5ff; --bg2:#ffffff; --bg3:#eef0ff;
+      --card:#ffffff; --card2:#f7f8ff; --text:#0f172a; --muted:#334155;
+      --accent: var(--icf-blue); --accent2: var(--cred-orange);
+      --surface-border: rgba(0,0,0,.10);
+      --btn-bg:#ffffff; --btn-bg-hover: rgba(0,0,0,.03);
+      --progress-bg: rgba(15,23,42,.12);
+      --chart-grid:#dbe1ff; --chart-axis:#4b5563; --chart-text:#111827;
+    }
+
+    body{
+      margin:0;
+      color:var(--text);
+      font-family:var(--font-body);
+      background-color: var(--bg1);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(48,57,141,.25), transparent),
+        radial-gradient(1000px 500px at 110% 10%, rgba(254,189,59,.25), transparent),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 48%, var(--bg3));
+      height:100vh; overflow:hidden;
+      display:grid; grid-template-rows:auto 1fr auto;
+    }
+
+    header{background:rgba(0,0,0,.18); border-bottom:1px solid var(--surface-border)}
+    .wrap{max-width:1100px;margin:0 auto;padding:10px 14px}
+    .title{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .title h1{margin:0;font-family:var(--font-title);font-weight:800;font-size:clamp(18px,2.6vw,24px)}
+
+    .meter{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:6px;font-size:12px}
+    .badge{background:linear-gradient(180deg, var(--card2), var(--card));border:1px solid var(--surface-border);padding:6px 8px;border-radius:10px; display:flex; gap:6px; align-items:center}
+    .badge b{font-weight:800;color:var(--accent2)}
+    .progress{height:8px; flex:1; min-width:160px; border-radius:999px; overflow:hidden; background:var(--progress-bg)}
+    .progress>span{display:block;height:100%;width:0%; background:linear-gradient(90deg, var(--accent), var(--accent2)); transition:width .35s ease}
+
+    main{display:grid; place-items:center; padding:8px 10px; overflow:hidden}
+    .stage{width:min(900px, 96vw); height:100%; display:flex; align-items:center; justify-content:center}
+
+    .card{
+      width:100%; height:min(70vh, 100%); overflow:hidden;
+      background:linear-gradient(180deg, var(--card), var(--card2));
+      border:1px solid var(--surface-border); border-radius:16px; padding:14px;
+      display:grid; grid-template-rows:auto 1fr auto; gap:10px;
+      box-shadow: 0 16px 44px rgba(0,0,0,.18);
+    }
+
+    .q-head{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap}
+    .q-index{font-size:12px; color:var(--muted); letter-spacing:.2px}
+    .question{font-size:clamp(16px,2.2vw,20px);line-height:1.28}
+
+    #options{display:flex;flex-direction:column;gap:8px;}
+    .btn{text-align:left; border:1px solid var(--surface-border);background:var(--btn-bg); color:var(--text);
+      padding:10px 12px; border-radius:10px; cursor:pointer;font-size:clamp(14px,1.9vw,17px);}
+    .btn:hover{transform:translateY(-1px); background:var(--btn-bg-hover)}
+    .btn.correct{font-weight:800;border-color:rgba(22,163,74,.6);background:linear-gradient(180deg, rgba(22,163,74,.28), rgba(22,163,74,.14))}
+    .btn.wrong{font-weight:800;border-color:rgba(220,38,38,.6);background:linear-gradient(180deg, rgba(220,38,38,.28), rgba(220,38,38,.14))}
+    .btn.disabled{pointer-events:none; opacity:.95}
+
+    .pill{font-weight:800; letter-spacing:.2px;background:#fff; padding:6px 8px;border-radius:999px;border:1px solid var(--surface-border); color:#111}
+    .nav{display:flex; justify-content:flex-end}
+    .action{border:0; padding:10px 16px; border-radius:10px;background:linear-gradient(90deg, var(--accent), var(--accent2)); color:#111827; font-weight:900; cursor:pointer; box-shadow:0 8px 18px rgba(0,0,0,.25)}
+    .action.ghost{background:linear-gradient(180deg, var(--card2), var(--card)); border:1px solid var(--surface-border); color:var(--text); box-shadow:none}
+
+    footer{background: rgba(0,0,0,.18); border-top:1px solid var(--surface-border)}
+    .footbar{display:flex;align-items:center;justify-content:space-between;gap:12px
+      position:relative;
+    }
+
+    html[data-theme="dark"] #answered.pill,
+    html[data-theme="dark"] footer .pill{
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color: #111827; border:0; box-shadow: 0 8px 18px rgba(0,0,0,.35);
+    }
+
+    #resultModal{display:none}
+    #resultModal.show{display:flex; position:fixed; inset:0; align-items:center; justify-content:center;background: rgba(0,0,0,.6); padding:12px;}
+    #resultModal .panel{
+      max-width:980px; width:92%;
+      padding:16px 14px; border-radius:16px;
+      background:linear-gradient(180deg, var(--card), var(--card2)); border:1px solid var(--surface-border);
+      box-shadow: 0 30px 80px rgba(0,0,0,.5);
+      color:var(--text);
+      max-height:86vh; overflow:auto;
+      display:flex; flex-direction:column; gap:12px;
+      text-align:left;
+    }
+    #resultModal h2{margin:0; font-family:var(--font-title); font-weight:900; font-size:clamp(18px,2.4vw,26px); text-align:center}
+    #resultScore{ text-align:center }
+    .grid2{display:grid; grid-template-columns:1fr; gap:12px}
+    @media (min-width: 860px){ .grid2{grid-template-columns: 1.1fr .9fr;} }
+
+    .panelCard{
+      border:1px solid var(--surface-border);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border-radius:14px;
+      padding:12px;
+    }
+    .panelCard h3{margin:0 0 10px 0; font-family:var(--font-title); font-size:16px; letter-spacing:.2px}
+
+    .barRow{display:grid; grid-template-columns: 1fr 90px; gap:10px; align-items:center; padding:7px 0; border-top:1px dashed rgba(255,255,255,.12)}
+    .barRow:first-child{border-top:0}
+    .barLabel{font-size:13px; color:var(--muted); margin-bottom:6px}
+    .barWrap{height:10px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden}
+    .barFill{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent2)); transition:width .6s ease}
+    .barPct{font-family:var(--font-title); font-weight:900; text-align:right}
+
+    .miniLegend{display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted)}
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block; background:linear-gradient(90deg, var(--accent), var(--accent2)); margin-right:6px; vertical-align:middle}
+    .resultActions{display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap}
+  
+    /* --- Welcome screen --- */
+    .welcomeBox{
+      height:100%;
+      display:flex;
+      position:relative;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:10px 14px;
+      padding-bottom:90px;
+      gap:14px;
+    }
+    .welcomeBox h2{
+      margin:0;
+      font-family:var(--font-title);
+      font-weight:900;
+      font-size:clamp(26px,4vw,38px);
+      letter-spacing:.2px;
+    }
+    .welcomeBox .wtext{
+      max-width:760px;
+      font-size:clamp(14px,2vw,18px);
+      line-height:1.5;
+      color:var(--muted);
+      text-align:justify;
+    }
+    .welcomeBox .wcredit{
+      position:absolute;
+      left:50%;
+      bottom:12px;
+      transform:translateX(-50%);
+      text-align:center;
+      width:100%;
+      font-size:clamp(13px,1.6vw,16px);
+      color:var(--muted);
+    }
+    .welcomeBox .wcredit a{
+      color:inherit;
+      text-decoration:underline;
+    }
+    .welcomeBox .wcredit a:hover{ text-decoration:underline; }
+.welcomeBox .wcta{
+      margin-top:10px;
+      margin-bottom:26px; /* keep distance from footer */
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+
+    /* Welcome footer center credit aligned with footer labels */
+    #welcomeCreditFooter{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      display:none;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      pointer-events:auto;
+    }
+    #welcomeCreditFooter a{
+      color:inherit;
+      text-decoration:underline;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">
+        <h1>Quiz Autovalutazione — Competenze core ICF (68 domande)</h1>
+      </div>
+      <div class="meter">
+        <div class="badge">✅ Corrette: <b id="good">0</b></div>
+        <div class="badge">❌ Errate: <b id="bad">0</b></div>
+        <div class="badge">📊 Percentuale: <b id="pct">0%</b></div>
+        <div class="progress"><span id="prog"></span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="stage">
+      <article class="card">
+        <div>
+          <div class="q-head">
+            <div class="q-index" id="qIndex">Domanda 1 di 68</div>
+            <div class="pill" id="answered">0 / 68 risposte</div>
+          </div>
+          <div class="question" id="questionText">...</div>
+        </div>
+        <div class="opts" id="options"></div>
+        <div class="nav"><button class="action" id="nextBtn" disabled>AVANTI</button></div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap footbar">
+      <div class="left"><span class="pill">Obiettivo superamento: <b>≥ 80%</b></span></div>
+      <button class="action" id="finishBtn">Termina test</button>
+    </div>
+</footer>
+
+  <section class="modal" id="resultModal">
+    <div class="panel">
+      <h2 id="resultTitle"></h2>
+      <div id="resultScore" style="font-size:16px; opacity:.9;"></div>
+
+      <div class="grid2">
+        <div class="panelCard">
+          <h3>📊 Grafico per Competenza Core</h3>
+          <div class="miniLegend"><span><span class="dot"></span>% risposte corrette per competenza</span></div>
+          <div id="coreBars"></div>
+        </div>
+
+        <div class="panelCard">
+          <h3>📌 Riepilogo</h3>
+          <div id="summaryBox" style="font-size:14px; line-height:1.5; color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <div class="resultActions">
+        <button class="action ghost" id="restartBtn">Ricomincia</button>
+        <button class="action" id="closeBtn">Termina</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function(){
+    const CORE=[
+      "Dimostra la pratica etica",
+      "Incarna il coaching mindset",
+      "Stabilisce e mantiene gli accordi",
+      "Coltiva fiducia e sicurezza",
+      "Mantiene la presenza",
+      "Ascolta attivamente",
+      "Evoca consapevolezza",
+      "Facilita la crescita del cliente"
+    ];
+
+    // Dataset 68: testo come da tuo elenco (con virgolette tipografiche bonificate per evitare crash)
+    const SUB=[
+      ["Dimostra integrità personale e onestà nelle interazioni con clienti, sponsor e parti interessate.","Dimostra la pratica etica"],
+      ["È sensibile all'identità, all'ambiente, alle esperienze, ai valori e alle credenze dei clienti.","Dimostra la pratica etica"],
+      ["Utilizza un linguaggio appropriato e rispettoso di clienti, sponsor e parti interessate.","Dimostra la pratica etica"],
+      ["Rispetta il Codice Etico ICF e sostiene i valori fondamentali ICF.","Dimostra la pratica etica"],
+      ["Mantiene la riservatezza delle informazioni dei clienti in coerenza con gli accordi con le parti interessate e le leggi pertinenti.","Dimostra la pratica etica"],
+      ["Mantiene le distinzioni tra coaching, consulenza, psicoterapia e altre professioni di supporto.","Dimostra la pratica etica"],
+      ["Rinvia i clienti ad altri professionisti del supporto, ove appropriato.","Dimostra la pratica etica"],
+
+      ["Riconosce che i clienti sono responsabili delle proprie scelte.","Incarna il coaching mindset"],
+      ["Si impegna nell’apprendimento e nello sviluppo continuo come coach, compreso rimanere consapevole delle attuali migliori pratiche di coaching e dell’uso della tecnologia","Incarna il coaching mindset"],
+      ["Sviluppa una pratica riflessiva continua per migliorare la propria capacità di essere coach.","Incarna il coaching mindset"],
+      ["Rimane consapevole e aperto all’influenza dei bias, del contesto e della cultura su sé stesso e sugli altri","Incarna il coaching mindset"],
+      ["Utilizza la consapevolezza di sé e la propria intuizione a beneficio dei clienti.","Incarna il coaching mindset"],
+      ["Sviluppa e mantiene la capacità di gestire le proprie emozioni","Incarna il coaching mindset"],
+      ["Mantiene il benessere emotivo, fisico e mentale in preparazione, durante e dopo ogni sessione","Incarna il coaching mindset"],
+      ["Cerca aiuto da fonti esterne quando necessario.","Incarna il coaching mindset"],
+      ["Coltiva l’apertura e la curiosità in sé stesso, nel cliente e nel processo di coaching","Incarna il coaching mindset"],
+      ["Rimane consapevole dell’influenza dei propri pensieri e comportamenti sul cliente e sugli altri","Incarna il coaching mindset"],
+
+      ["Descrive la propria filosofia di coaching e definisce chiaramente cosa è e cosa non è il coaching per potenziali clienti e stakeholder","Stabilisce e mantiene gli accordi"],
+      ["Raggiunge un accordo su ciò che è e non è appropriato nella relazione, ciò che viene e non viene offerto, e sulle responsabilità del cliente e degli stakeholder rilevanti, incluso l’impegno a lavorare verso gli obiettivi di coaching","Stabilisce e mantiene gli accordi"],
+      ["Raggiunge un accordo sulle linee guida e sui parametri specifici della relazione di coaching come logistica, commissioni, programmazione, durata, cessazione, riservatezza e inclusione di altri.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente e le parti interessate per stabilire un piano generale e gli obiettivi di coaching.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per determinare la compatibilità fra cliente e coach.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per identificare o riconfermare ciò che si vuole realizzare nella sessione.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per definire cosa crede sia necessario considerare o risolvere per raggiungere ciò che desidera nella sessione.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per definire o riconfermare le modalità di misurazione dei risultati rispetto a ciò che il cliente vuole raggiungere nel percorso di coaching o nella sessione individuale.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per gestire il tempo e il focus della sessione.","Stabilisce e mantiene gli accordi"],
+      ["Porta avanti il coaching nella direzione del risultato desiderato dal cliente, a meno che il cliente non indichi diversamente.","Stabilisce e mantiene gli accordi"],
+      ["Collabora con il cliente per chiudere la relazione di coaching in modo che rispetti il cliente e l’esperienza di coaching","Stabilisce e mantiene gli accordi"],
+      ["Rivede l’accordo di coaching quando necessario per garantire che l’approccio di coaching soddisfi le esigenze del cliente","Stabilisce e mantiene gli accordi"],
+
+      ["Cerca di capire il cliente nel suo contesto, che può includere la sua identità, ambiente, esperienze, valori e credenze.","Coltiva fiducia e sicurezza"],
+      ["Dimostra rispetto per l'identità del cliente, le sue percezioni, il suo stile e linguaggio e adatta il proprio coaching al cliente.","Coltiva fiducia e sicurezza"],
+      ["Riconosce e rispetta l’unicità dei talenti, le intuizioni e il lavoro del cliente nel processo di coaching.","Coltiva fiducia e sicurezza"],
+      ["Mostra supporto, empatia ed interesse per il cliente.","Coltiva fiducia e sicurezza"],
+      ["Riconosce e supporta l'espressione del cliente di sentimenti, percezioni, preoccupazioni, convinzioni e impressioni.","Coltiva fiducia e sicurezza"],
+      ["Dimostra apertura e trasparenza come un modo per mostrare vulnerabilità e creare fiducia con il cliente.","Coltiva fiducia e sicurezza"],
+
+      ["Rimane focalizzato, in osservazione, empatico e in grado di adattarsi al cliente.","Mantiene la presenza"],
+      ["Dimostra curiosità durante il processo di coaching.","Mantiene la presenza"],
+      ["Rimane consapevole di ciò che emerge per sé stesso e per il cliente nel momento presente","Mantiene la presenza"],
+      ["Gestisce le proprie emozioni per rimanere presente con il cliente.","Mantiene la presenza"],
+      ["Dimostra sicurezza nel lavorare con forti emozioni del cliente durante il processo di coaching.","Mantiene la presenza"],
+      ["È a suo agio nel lavorare nello spazio del \"non sapere\".","Mantiene la presenza"],
+      ["Crea o lascia spazio per silenzio, pause o riflessione.","Mantiene la presenza"],
+
+      ["Considera il contesto, l'identità, l'ambiente, le esperienze, i valori e le convinzioni del cliente per migliorare la comprensione di ciò che il cliente sta comunicando.","Ascolta attivamente"],
+      ["Rispecchia o sintetizza ciò che il cliente sta comunicando per garantire chiarezza e comprensione.","Ascolta attivamente"],
+      ["Riconosce ed esplora quando c'è di più oltre ciò che il cliente sta comunicando.","Ascolta attivamente"],
+      ["Osserva, riconosce ed esplora le emozioni, i cambiamenti di energia, i segnali non verbali o altri comportamenti del cliente.","Ascolta attivamente"],
+      ["Integra le parole, il tono della voce e il linguaggio del cliente per comprendere il significato completo di ciò che il cliente sta comunicando","Ascolta attivamente"],
+      ["Nota le dinamiche dei comportamenti e delle emozioni del cliente nel corso delle sessioni per riconoscere temi generali e pattern.","Ascolta attivamente"],
+
+      ["Considera l'esperienza del cliente quando lui decide cosa potrebbe essergli più utile.","Evoca consapevolezza"],
+      ["Sfida il cliente come un modo per evocare consapevolezza o intuizione.","Evoca consapevolezza"],
+      ["Pone domande sul cliente, ad esempio sul suo modo di pensare, i valori, i bisogni, i desideri e le credenze.","Evoca consapevolezza"],
+      ["Fa domande che aiutano il cliente a esplorare oltre il suo pensiero attuale.","Evoca consapevolezza"],
+      ["Invita il cliente a condividere di più sulla propria esperienza nel qui e ora.","Evoca consapevolezza"],
+      ["Nota cosa sta funzionando per incrementare i progressi del cliente.","Evoca consapevolezza"],
+      ["Adatta l’approccio di coaching in risposta alle esigenze del cliente.","Evoca consapevolezza"],
+      ["Aiuta il cliente ad identificare i fattori che influenzano i modelli attuali e futuri di comportamento, pensiero o emozioni.","Evoca consapevolezza"],
+      ["Invita i clienti a generare idee su come possono progredire e su ciò che sono intenzionati o in grado di fare.","Evoca consapevolezza"],
+      ["Supporta il cliente a ricontestualizzare le prospettive.","Evoca consapevolezza"],
+      ["Condivide senza attaccamento osservazioni, conoscenza e sentimenti, che hanno il potenziale per creare nuove intuizioni per il cliente","Evoca consapevolezza"],
+
+      ["Lavora con il cliente per integrare nuove consapevolezze, intuizioni o apprendimenti nella sua visione del mondo e nei comportamenti.","Facilita la crescita del cliente"],
+      ["Collabora con il cliente per progettare obiettivi, azioni e indicatori di responsabilità che integrano ed espandono nuovi apprendimenti.","Facilita la crescita del cliente"],
+      ["Riconosce e supporta l'autonomia del cliente nella progettazione di obiettivi, azioni e metodi di responsabilità.","Facilita la crescita del cliente"],
+      ["Supporta il cliente nell'identificare i risultati o l’apprendimento potenziali derivanti dalle azioni identificate.","Facilita la crescita del cliente"],
+      ["Invita il cliente a considerare in che modo progredire, includendo risorse, supporti e potenziali barriere.","Facilita la crescita del cliente"],
+      ["Collabora con il cliente per sintetizzare l'apprendimento e le intuizioni durante o tra le sessioni.","Facilita la crescita del cliente"],
+      ["Collabora con il cliente per integrare l’apprendimento e sostenere il progresso durante tutto l’intero percorso di coaching","Facilita la crescita del cliente"],
+      ["Riconosce i progressi e i successi del cliente.","Facilita la crescita del cliente"],
+      ["Collabora con il cliente per chiudere la sessione.","Facilita la crescita del cliente"]
+    ];
+
+    const $=id=>document.getElementById(id);
+    const qIndex=$("qIndex"), qText=$("questionText"), optsBox=$("options"),
+          nextBtn=$("nextBtn"), goodEl=$("good"), badEl=$("bad"),
+          pctEl=$("pct"), progEl=$("prog"), ansEl=$("answered"),
+          finishBtn=$("finishBtn"), modal=$("resultModal"),
+          coreBars=$("coreBars"), summaryBox=$("summaryBox"),
+          restartBtn=$("restartBtn"), closeBtn=$("closeBtn");
+
+    // --- Welcome screen state ---
+    let welcome=true;
+
+    function renderWelcome(){
+      // disable finishing before starting
+      finishBtn.disabled=true;
+
+      // Hide footer CTAs; keep footer labels visible
+      nextBtn.style.display="none";
+      finishBtn.style.display="none";
+      const wcf = document.getElementById("welcomeCreditFooter");
+      if(wcf) wcf.style.display="inline-flex";
+
+      qIndex.textContent="";
+      qText.innerHTML = `
+        <div class="welcomeBox">
+          <h2>Benvenuto!</h2>
+          <div class="wtext">
+            <div>In questo questionario di autovalutazione delle Competenze Core ICF dovrai rispondere a 68 domande.</div>
+            <div>Ad ogni domanda dovrai rispondere scegliendo la Competenza Core a cui appartiene la sotto-competenza menzionata nella domanda.</div>
+            <div>Il test viene superato con l'80% delle risposte giuste</div>
+            <div>Al termine avrai la possibilità di avere un quadro riassuntivo delle risposte che hai dato</div>
+          </div>
+
+          <div class="wcta">
+            <button class="action" id="startBtn">INIZIA IL TEST</button>
+          </div>
+
+          <div class="wcredit">
+            <span>Creato da Tito Bertasi</span>
+            <span> (</span>
+            <a href="https://www.linkedin.com/in/titobertasi1980/" target="_blank" rel="noopener noreferrer">
+              Visita il profilo linkedin
+            </a>
+            <span>)</span>
+          </div>
+        </div>
+      `;
+      optsBox.innerHTML="";
+
+      // wire start button
+      const startBtnEl = document.getElementById("startBtn");
+      if(startBtnEl){
+        startBtnEl.addEventListener("click", ()=>{
+          welcome=false;
+          // Show footer CTAs again
+          nextBtn.style.display="";
+          finishBtn.style.display="";
+          const wcf2 = document.getElementById("welcomeCreditFooter");
+          if(wcf2) wcf2.style.display="none";
+          nextBtn.textContent="AVANTI";
+          renderQuestion();
+        }, { once:true });
+      }
+    }
+
+
+    const shuffle=(arr)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+    function makeQuestions(){
+      const pool=shuffle(SUB.slice()); // 68 uniche, nessuna ripetizione
+      return pool.map(([sub,core])=>{
+        const options=shuffle(CORE.slice());
+        return { sub, core, options, correct: options.indexOf(core) };
+      });
+    }
+
+    let QUESTIONS=makeQuestions(),idx=0,good=0,bad=0,answered=0,locked=false;
+
+    // tracking per core
+    let coreTotals={}, coreGoods={};
+    function initCoreStats(){
+      coreTotals={}; coreGoods={};
+      CORE.forEach(c=>{coreTotals[c]=0; coreGoods[c]=0;});
+    }
+    initCoreStats();
+
+    function updateHUD(){
+      const pct=answered?Math.round((good/answered)*100):0;
+      goodEl.textContent=good; badEl.textContent=bad; pctEl.textContent=pct+"%";
+      ansEl.textContent=`${answered} / ${QUESTIONS.length} risposte`;
+      progEl.style.width=Math.round((answered/QUESTIONS.length)*100)+"%";
+    }
+
+    function renderQuestion(){
+      if(welcome){ renderWelcome(); return; }
+      // ensure footer CTAs are visible
+      const wcf3 = document.getElementById("welcomeCreditFooter");
+      if(wcf3) wcf3.style.display="none";
+      nextBtn.style.display="";
+      finishBtn.style.display="";
+      finishBtn.disabled=false;
+      locked=false; nextBtn.disabled=true; optsBox.innerHTML="";
+      const q=QUESTIONS[idx];
+      qIndex.textContent=`Domanda ${idx+1} di ${QUESTIONS.length}`;
+      qText.innerHTML=`A quale competenza core appartiene la seguente sotto-competenza?<br><b>"${q.sub}"</b>`;
+      q.options.forEach((opt,i)=>{
+        const b=document.createElement("button"); b.className="btn"; b.dataset.i=i; b.textContent=opt;
+        b.addEventListener("click",()=>{
+          if(locked)return; locked=true;
+
+          // conteggio tentativo per core della domanda
+          coreTotals[q.core]++;
+
+          const all=optsBox.querySelectorAll(".btn"); all.forEach(x=>x.classList.add("disabled"));
+          if(i===q.correct){
+            b.classList.add("correct");
+            good++;
+            coreGoods[q.core]++;
+          }else{
+            b.classList.add("wrong"); bad++;
+            all.forEach(x=>{ if(Number(x.dataset.i)===q.correct) x.classList.add("correct"); });
+          }
+
+          answered++; updateHUD(); nextBtn.disabled=false;
+          if(idx===QUESTIONS.length-1) nextBtn.textContent="VEDI RISULTATO";
+        });
+        optsBox.appendChild(b);
+      });
+    }
+
+    function buildBars(){
+      coreBars.innerHTML="";
+      CORE.forEach(core=>{
+        const tot=coreTotals[core]||0;
+        const ok=coreGoods[core]||0;
+        const pct=tot?Math.round((ok/tot)*100):0;
+
+        const row=document.createElement("div");
+        row.className="barRow";
+
+        const left=document.createElement("div");
+        const label=document.createElement("div");
+        label.className="barLabel";
+        label.textContent=core;
+        const wrap=document.createElement("div");
+        wrap.className="barWrap";
+        const fill=document.createElement("div");
+        fill.className="barFill";
+        fill.style.width=pct+"%";
+        wrap.appendChild(fill);
+        left.appendChild(label);
+        left.appendChild(wrap);
+
+        const right=document.createElement("div");
+        right.className="barPct";
+        right.textContent=pct+"%";
+
+        row.appendChild(left);
+        row.appendChild(right);
+        coreBars.appendChild(row);
+      });
+    }
+
+    function finish(){
+      const total=QUESTIONS.length;
+      const pct=Math.round((good/total)*100);
+      const title=$("resultTitle"); const score=$("resultScore");
+      const passed=(pct>=80); const emoji=passed?"😎":"😢";
+
+      title.textContent = passed
+        ? `${emoji} COMPLIMENTI HAI SUPERATO IL TEST CON IL PUNTEGGIO ${pct}% ${emoji}`
+        : `${emoji} RITENTA SARAI PIÙ FORTUNATO, IL TUO PUNTEGGIO È ${pct}% ${emoji}`;
+
+      score.textContent = `Corrette: ${good} • Errate: ${bad} • Totale: ${total}`;
+
+      // --- RIEPILOGO: tutte le competenze sopra/sotto soglia 80% ---
+      const stats = CORE
+        .map(c => {
+          const tot = coreTotals[c] || 0;
+          const ok  = coreGoods[c] || 0;
+          const pct = tot ? (ok / tot * 100) : 0;
+          return { c, pct };
+        })
+        .sort((a,b) => b.pct - a.pct);
+
+      // Punti forti = tutte le core >=80
+      const strengths = stats
+        .filter(x => x.pct >= 80)
+        .sort((a,b) => b.pct - a.pct);
+
+      // Da rinforzare = tutte le core <80
+      const toImprove = stats
+        .filter(x => x.pct < 80)
+        .sort((a,b) => a.pct - b.pct);
+
+      const strengthsHTML = strengths.length
+        ? `<ul style="margin:6px 0 0 18px; padding:0; color:var(--muted)">
+            ${strengths.map(x => `<li><b>${x.c}</b> (${Math.round(x.pct)}%)</li>`).join("")}
+           </ul>`
+        : `<div style="margin-top:6px; color:var(--muted)">Nessuna competenza core è ≥ 80% (per ora).</div>`;
+
+      const improveHTML = toImprove.length
+        ? `<ul style="margin:6px 0 0 18px; padding:0; color:var(--muted)">
+            ${toImprove.map(x => `<li><b>${x.c}</b> (${Math.round(x.pct)}%)</li>`).join("")}
+           </ul>`
+        : `<div style="margin-top:6px; color:var(--muted)"><b>Tutte</b> le competenze core sono ≥ 80% ✅</div>`;
+
+      summaryBox.innerHTML = `
+        <div><b>Obiettivo:</b> ≥ 80% — <b>${passed ? "raggiunto ✅" : "non raggiunto ❌"}</b></div>
+
+        <div style="margin-top:10px"><b>Punti forti (≥ 80%):</b>${strengthsHTML}</div>
+
+        <div style="margin-top:10px"><b>Da rinforzare (sotto 80%):</b>${improveHTML}</div>
+
+        <div style="margin-top:10px">Suggerimento: ripeti il quiz finché tutte le competenze core restano stabilmente ≥ 80%.</div>
+      `;
+
+      buildBars();
+      modal.classList.add('show');
+    }
+
+    function restart(){
+      welcome=true;
+      QUESTIONS=makeQuestions();
+      idx=0; good=0; bad=0; answered=0; locked=false;
+      initCoreStats();
+      nextBtn.textContent="AVANTI";
+      modal.classList.remove('show');
+      updateHUD(); renderQuestion();
+    }
+
+    nextBtn.addEventListener("click",()=>{
+      if(welcome){ return; }
+      if(idx<QUESTIONS.length-1){ idx++; renderQuestion(); }
+      else finish();
+    });
+finishBtn.addEventListener("click",finish);
+    restartBtn.addEventListener("click",restart);
+    closeBtn.addEventListener("click",()=>{
+      try { window.close(); }
+      catch(e) {}
+      // Fallback if the browser blocks window.close()
+      window.location.href = "about:blank";
+    });
+updateHUD(); renderQuestion();
+  })();
+  </script>
+</body>
+</html>
