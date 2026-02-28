@@ -554,6 +554,10 @@
       .btn { font-size: 17px; }
     }
 
+
+    /* PDF button — desktop only */
+    #pdfBtn { display: none; }
+    @media (min-width: 768px) { #pdfBtn { display: inline-flex; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -903,11 +907,9 @@
       const mg = 16;
       const col = W - mg * 2;
 
-      // ── background
       doc.setFillColor(10,15,46);
       doc.rect(0,0,W,H,'F');
 
-      // ── header band
       doc.setFillColor(17,26,77);
       doc.rect(0,0,W,30,'F');
       doc.setDrawColor(45,212,191);
@@ -927,7 +929,6 @@
       doc.setTextColor(139,150,204);
       doc.text(dateStr, W-mg, 22, {align:'right'});
 
-      // ── score circle
       const total  = QUESTIONS.length;
       const pct    = Math.round((good/total)*100);
       const passed = pct >= 80;
@@ -953,7 +954,6 @@
       doc.text('Corrette: '+good+'   Errate: '+bad+'   Totale: '+total, W/2, y, {align:'center'});
       y += 8;
 
-      // ── bars section
       doc.setFillColor(21,29,82);
       doc.roundedRect(mg, y, col, 6, 1.5, 1.5, 'F');
       doc.setFont('helvetica','bold');
@@ -967,12 +967,10 @@
         const ok  = coreGoods[core]||0;
         const p   = tot ? Math.round((ok/tot)*100) : 0;
         const okC = p >= 80;
-        // label
         doc.setFont('helvetica','normal');
         doc.setFontSize(6.5);
         doc.setTextColor(139,150,204);
         doc.text(core, mg, y);
-        // bar
         const barY = y + 3;
         doc.setFillColor(30,38,90);
         doc.roundedRect(mg, barY, col-14, 2.8, 1.4, 1.4, 'F');
@@ -987,7 +985,6 @@
       });
       y += 3;
 
-      // ── summary section
       doc.setFillColor(21,29,82);
       doc.roundedRect(mg, y, col, 6, 1.5, 1.5, 'F');
       doc.setFont('helvetica','bold');
@@ -1002,7 +999,6 @@
       const strengths = stats.filter(x=>x.pct>=80);
       const toImprove = stats.filter(x=>x.pct<80).sort((a,b)=>a.pct-b.pct);
 
-      // single column — strengths
       doc.setFont('helvetica','bold');
       doc.setFontSize(7);
       doc.setTextColor(232,236,255);
@@ -1026,7 +1022,6 @@
       }
       y += 3;
 
-      // single column — to improve
       doc.setFont('helvetica','bold');
       doc.setFontSize(7);
       doc.setTextColor(232,236,255);
@@ -1050,14 +1045,12 @@
       }
       y += 4;
 
-      // tip
       doc.setFont('helvetica','italic');
       doc.setFontSize(6.5);
       doc.setTextColor(100,110,160);
       const tip = doc.splitTextToSize('Suggerimento: ripeti il quiz finche tutte le competenze restano stabilmente >= 80%.', col);
       doc.text(tip, mg, y);
 
-      // ── footer
       doc.setFillColor(17,26,77);
       doc.rect(0,H-9,W,9,'F');
       doc.setFont('helvetica','normal');
