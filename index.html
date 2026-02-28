@@ -897,126 +897,110 @@
     // ── PDF ──────────────────────────────────────────────
     function downloadPDF(){
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const W = doc.internal.pageSize.getWidth();
       const H = doc.internal.pageSize.getHeight();
-      const margin = 18;
-      const col = W - margin*2;
-      let y = 0;
+      const mg = 16;
+      const col = W - mg * 2;
 
-      // ── sfondo pagina
-      doc.setFillColor(10, 15, 46);
-      doc.rect(0, 0, W, H, 'F');
+      // ── full dark background
+      doc.setFillColor(10,15,46);
+      doc.rect(0,0,W,H,'F');
 
       // ── header band
-      doc.setFillColor(17, 26, 77);
-      doc.rect(0, 0, W, 38, 'F');
+      doc.setFillColor(17,26,77);
+      doc.rect(0,0,W,32,'F');
+      doc.setDrawColor(45,212,191);
+      doc.setLineWidth(1);
+      doc.line(0,32,W,32);
 
-      // ── accent line
-      doc.setDrawColor(45, 212, 191);
-      doc.setLineWidth(1.2);
-      doc.line(0, 38, W, 38);
-
-      y = 13;
       doc.setFont('helvetica','bold');
-      doc.setFontSize(9);
-      doc.setTextColor(139, 150, 204);
-      doc.text('SELF ASSESSMENT COMPETENZE CORE ICF', margin, y);
+      doc.setFontSize(8);
+      doc.setTextColor(139,150,204);
+      doc.text('SELF ASSESSMENT COMPETENZE CORE ICF', mg, 11);
 
-      y = 27;
-      doc.setFontSize(16);
-      doc.setTextColor(232, 236, 255);
-      doc.text('Risultato del Quiz', margin, y);
+      doc.setFontSize(14);
+      doc.setTextColor(232,236,255);
+      doc.text('Risultato del Quiz', mg, 23);
 
-      // data
       const dateStr = new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'});
-      doc.setFontSize(8);
       doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
       doc.setTextColor(139,150,204);
-      doc.text(dateStr, W - margin, 27, {align:'right'});
+      doc.text(dateStr, W-mg, 23, {align:'right'});
 
-      y = 56;
-
-      // ── score circle (drawn as filled circle)
-      const total = QUESTIONS.length;
-      const pct   = Math.round((good/total)*100);
+      // ── score circle (compact)
+      const total  = QUESTIONS.length;
+      const pct    = Math.round((good/total)*100);
       const passed = pct >= 80;
+      const cy = 48;
+      const cr = 13;
 
-      // big percentage
-      doc.setFillColor(21, 29, 82);
-      doc.circle(W/2, y, 22, 'F');
-      doc.setDrawColor(passed ? 52 : 248, passed ? 211 : 113, passed ? 153 : 113);
-      doc.setLineWidth(2);
-      doc.circle(W/2, y, 22, 'S');
-
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(22);
-      doc.setTextColor(232, 236, 255);
-      doc.text(pct+'%', W/2, y+4, {align:'center'});
-
-      y += 30;
-      doc.setFontSize(11);
-      doc.setTextColor(passed ? 52 : 248, passed ? 211 : 113, passed ? 153 : 113);
-      doc.text(passed ? 'Test superato ✓' : 'Obiettivo non raggiunto', W/2, y, {align:'center'});
-
-      y += 8;
-      doc.setFontSize(9);
-      doc.setTextColor(139,150,204);
-      doc.text(`Corrette: ${good}   Errate: ${bad}   Totale: ${total}`, W/2, y, {align:'center'});
-
-      y += 14;
-
-      // ── section title: per competenza
       doc.setFillColor(21,29,82);
-      doc.roundedRect(margin, y, col, 8, 2, 2, 'F');
+      doc.circle(W/2, cy, cr, 'F');
+      doc.setDrawColor(passed?52:248, passed?211:113, passed?153:113);
+      doc.setLineWidth(1.5);
+      doc.circle(W/2, cy, cr, 'S');
       doc.setFont('helvetica','bold');
-      doc.setFontSize(8);
-      doc.setTextColor(45,212,191);
-      doc.text('RISULTATO PER COMPETENZA CORE', margin+4, y+5.5);
-      y += 13;
+      doc.setFontSize(16);
+      doc.setTextColor(232,236,255);
+      doc.text(pct+'%', W/2, cy+3, {align:'center'});
 
-      // ── bars
-      CORE.forEach(core=>{
+      // pass/fail label + stats on same line
+      let y = cy + cr + 6;
+      doc.setFontSize(9);
+      doc.setTextColor(passed?52:248, passed?211:113, passed?153:113);
+      doc.text(passed ? 'Test superato' : 'Obiettivo non raggiunto', W/2, y, {align:'center'});
+      y += 5;
+      doc.setFontSize(7.5);
+      doc.setTextColor(139,150,204);
+      doc.text('Corrette: '+good+'   Errate: '+bad+'   Totale: '+total, W/2, y, {align:'center'});
+      y += 7;
+
+      // ── section: bars
+      doc.setFillColor(21,29,82);
+      doc.roundedRect(mg, y, col, 6.5, 1.5, 1.5, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.setTextColor(45,212,191);
+      doc.text('RISULTATO PER COMPETENZA CORE', mg+3, y+4.5);
+      y += 9;
+
+      CORE.forEach(core => {
         const tot = coreTotals[core]||0;
         const ok  = coreGoods[core]||0;
         const p   = tot ? Math.round((ok/tot)*100) : 0;
-        const ok_color = p>=80;
+        const okC = p >= 80;
 
-        // label
         doc.setFont('helvetica','normal');
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setTextColor(139,150,204);
-        const lines = doc.splitTextToSize(core, col - 22);
-        doc.text(lines, margin, y);
-        const labelH = lines.length * 4.5;
+        doc.text(core, mg, y);
 
-        // bar track
-        const barY = y + labelH;
+        const barY = y + 3.5;
         doc.setFillColor(30,38,90);
-        doc.roundedRect(margin, barY, col-18, 4, 2, 2, 'F');
-        // bar fill
-        const fillW = Math.max((p/100)*(col-18), p>0?4:0);
-        doc.setFillColor(ok_color ? 52 : 248, ok_color ? 211 : 180, ok_color ? 153 : 36);
-        if(fillW>0) doc.roundedRect(margin, barY, fillW, 4, 2, 2, 'F');
-        // pct
+        doc.roundedRect(mg, barY, col-16, 3, 1.5, 1.5, 'F');
+        const fw = Math.max((p/100)*(col-16), p>0?3:0);
+        doc.setFillColor(okC?52:248, okC?211:160, okC?153:36);
+        if(fw>0) doc.roundedRect(mg, barY, fw, 3, 1.5, 1.5, 'F');
         doc.setFont('helvetica','bold');
-        doc.setFontSize(8);
-        doc.setTextColor(ok_color ? 52 : 251, ok_color ? 211 : 191, ok_color ? 153 : 36);
-        doc.text(p+'%', W-margin, barY+3.5, {align:'right'});
+        doc.setFontSize(7);
+        doc.setTextColor(okC?52:251, okC?211:191, okC?153:36);
+        doc.text(p+'%', W-mg, barY+2.5, {align:'right'});
 
-        y = barY + 10;
+        y = barY + 7;
       });
 
-      y += 4;
+      y += 2;
 
-      // ── summary section
+      // ── section: summary
       doc.setFillColor(21,29,82);
-      doc.roundedRect(margin, y, col, 8, 2, 2, 'F');
+      doc.roundedRect(mg, y, col, 6.5, 1.5, 1.5, 'F');
       doc.setFont('helvetica','bold');
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       doc.setTextColor(45,212,191);
-      doc.text('RIEPILOGO', margin+4, y+5.5);
-      y += 13;
+      doc.text('RIEPILOGO', mg+3, y+4.5);
+      y += 9;
 
       const stats = CORE.map(c=>({
         c, pct: (coreTotals[c]||0) ? ((coreGoods[c]||0)/(coreTotals[c]||1)*100) : 0
@@ -1025,43 +1009,70 @@
       const strengths = stats.filter(x=>x.pct>=80);
       const toImprove = stats.filter(x=>x.pct<80).sort((a,b)=>a.pct-b.pct);
 
+      const half = col/2 - 2;
+
+      // two-column layout for summary
+      let ly = y, ry = y;
+
+      // left col: strengths
       doc.setFont('helvetica','bold');
-      doc.setFontSize(8.5);
+      doc.setFontSize(7.5);
       doc.setTextColor(232,236,255);
+      doc.text('Punti forti (>= 80%):', mg, ly);
+      ly += 4.5;
       if(strengths.length){
-        doc.text('Punti forti (≥ 80%):', margin, y); y+=5;
         strengths.forEach(x=>{
           doc.setFont('helvetica','normal');
+          doc.setFontSize(7);
           doc.setTextColor(52,211,153);
-          doc.text(`• ${x.c} — ${Math.round(x.pct)}%`, margin+3, y); y+=5;
+          doc.text('+ '+x.c+' ('+Math.round(x.pct)+'%)', mg+2, ly);
+          ly += 4.2;
         });
-        y+=2;
-      }
-      if(toImprove.length){
-        doc.setFont('helvetica','bold');
-        doc.setTextColor(232,236,255);
-        doc.text('Da rinforzare (< 80%):', margin, y); y+=5;
-        toImprove.forEach(x=>{
-          doc.setFont('helvetica','normal');
-          doc.setTextColor(248,113,113);
-          doc.text(`• ${x.c} — ${Math.round(x.pct)}%`, margin+3, y); y+=5;
-        });
-        y+=2;
+      } else {
+        doc.setFont('helvetica','italic');
+        doc.setFontSize(7);
+        doc.setTextColor(139,150,204);
+        doc.text('Nessuna ancora >= 80%', mg+2, ly);
+        ly += 4.2;
       }
 
-      doc.setFont('helvetica','italic');
+      // right col: to improve
+      const rx = mg + half + 4;
+      doc.setFont('helvetica','bold');
       doc.setFontSize(7.5);
+      doc.setTextColor(232,236,255);
+      doc.text('Da rinforzare (< 80%):', rx, ry);
+      ry += 4.5;
+      if(toImprove.length){
+        toImprove.forEach(x=>{
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(7);
+          doc.setTextColor(248,113,113);
+          doc.text('- '+x.c+' ('+Math.round(x.pct)+'%)', rx+2, ry);
+          ry += 4.2;
+        });
+      } else {
+        doc.setFont('helvetica','italic');
+        doc.setFontSize(7);
+        doc.setTextColor(139,150,204);
+        doc.text('Tutte >= 80% !', rx+2, ry);
+        ry += 4.2;
+      }
+
+      y = Math.max(ly, ry) + 3;
+
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(7);
       doc.setTextColor(100,110,160);
-      const tip = doc.splitTextToSize('Suggerimento: ripeti il quiz finché tutte le competenze restano stabilmente ≥ 80%.', col);
-      doc.text(tip, margin, y);
+      doc.text('Suggerimento: ripeti il quiz finche tutte le competenze restano stabilmente >= 80%.', mg, y);
 
       // ── footer
       doc.setFillColor(17,26,77);
-      doc.rect(0, H-12, W, 12, 'F');
+      doc.rect(0,H-10,W,10,'F');
       doc.setFont('helvetica','normal');
-      doc.setFontSize(7);
+      doc.setFontSize(6.5);
       doc.setTextColor(80,95,150);
-      doc.text('Creato da Tito Bertasi · linkedin.com/in/titobertasi1980', W/2, H-5, {align:'center'});
+      doc.text('Creato da Tito Bertasi  |  linkedin.com/in/titobertasi1980', W/2, H-4, {align:'center'});
 
       doc.save('Risultato_Quiz_ICF.pdf');
     }
